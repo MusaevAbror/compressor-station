@@ -1,10 +1,12 @@
 import sys
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
+from PyQt5.QtSerialPort import QSerialPort, QSerialPortInfo
 from PyQt5.QtCore import *
 from PyQt5 import QtCore, QtGui
 from window.avariya import WindowAvar
-from PyQt5 import QtWidgets
+from models import *
+import datetime
 
 
 
@@ -17,16 +19,24 @@ class ArduinoPython(QMainWindow):
         self.initUi()
         self.initAction()
         self.initMenu()
-
+        self.qmsg = QMessageBox()
    
     def initUi(self):
         self.setGeometry(400, 100, 1100, 900)
-        
+        self.serial = QSerialPort(self)
+        self.serial.setBaudRate(9600)
+        self.ports = QSerialPortInfo.availablePorts()
+        self.serial.readyRead.connect(self.onRead)
+        self.portlist = []
+        for port in self.ports:
+            self.portlist.append(port.portName())
+
+    
+
+
         self.combo = QComboBox(self) # combobox Portni tanlash uchun 
         self.combo.move(30, 30)
-        self.combo.addItem("asasa")
-        self.combo.addItem("zxa")
-        self.combo.addItem("hgh")
+        self.combo.addItems(self.portlist)
         self.combo.setEditable(False)
         
         self.combo_c = QComboBox(self) # Combobox curerni rejimini tanlash 
@@ -37,9 +47,11 @@ class ArduinoPython(QMainWindow):
 
         self.btn_o = QPushButton("Открывать", self) # Button 
         self.btn_o.move(140, 30)
+        self.btn_o.clicked.connect(self.onOpen)
 
         self.btn_c = QPushButton("Закрывать", self)
         self.btn_c.move(250, 30)
+        self.btn_c.clicked.connect(self.onClose)
 
         self.btn_s = QPushButton("Стоп", self)
         self.btn_s.move(360, 30)
@@ -52,10 +64,12 @@ class ArduinoPython(QMainWindow):
         self.tem_M1_Bar.setOrientation(QtCore.Qt.Vertical)
         self.tem_M1_Bar.setMaximum(150)
         self.tem_M1_Bar.setValue(52)
+        
 
         self.tem_M1_sb = QSpinBox(self)   # M1 Matorning Temperaturasini SpinBox
         self.tem_M1_sb.setGeometry(50, 400, 50, 30)
         self.tem_M1_sb.setMaximum(self.tem_M1_Bar.maximum())
+        self.tem_M1_sb.setValue(100)
         self.tem_M1_sb.valueChanged.connect(self.onSpin_M1)
 
         self.tem1_ch = QCheckBox(self) # M1 SpinBox uchun CheckBox
@@ -85,6 +99,7 @@ class ArduinoPython(QMainWindow):
         self.tem_M2_sb = QSpinBox(self) # M2 matorning temperaturasi uchun SpinBox 
         self.tem_M2_sb.setGeometry(250, 400, 50, 30)
         self.tem_M2_sb.setMaximum(self.tem_M2_Bar.maximum())
+        self.tem_M2_sb.setValue(100)
         self.tem_M2_sb.valueChanged.connect(self.onSpin_M2)
 
         self.tem2_ch = QCheckBox(self) # M2 matorning spinBoxi uchun CheckBox
@@ -113,6 +128,7 @@ class ArduinoPython(QMainWindow):
         self.tem_T1_sb = QSpinBox(self) # T1 Tranzistor Temperaturasi uchun SpinBox
         self.tem_T1_sb.setGeometry(450, 400, 50, 30)
         self.tem_T1_sb.setMaximum(self.tem_M2_Bar.maximum())
+        self.tem_T1_sb.setValue(120)
         self.tem_T1_sb.valueChanged.connect(self.onSpin_T1)
 
         self.temt1_ch = QCheckBox(self)
@@ -142,6 +158,7 @@ class ArduinoPython(QMainWindow):
         self.tem_T2_sb = QSpinBox(self)  # T2 Tranzistor uchun SpinBox
         self.tem_T2_sb.setGeometry(650, 400, 50, 30)
         self.tem_T2_sb.setMaximum(self.tem_T2_Bar.maximum())
+        self.tem_T2_sb.setValue(120)
         self.tem_T2_sb.valueChanged.connect(self.onSpin_T2)
 
         self.temt2_ch = QCheckBox(self) # T2 SpinBox ovhun CheckBox
@@ -198,6 +215,8 @@ class ArduinoPython(QMainWindow):
             self.slider_Curer.setMaximum(255)
             self.slider_Curer.setTickPosition(QSlider.TicksBothSides)
             self.slider_Curer.setSingleStep(50)
+            self.slider_Curer.valueChanged.connect(self.onDataCurer)
+
 
             self.c_l = QLabel(self)
             self.c_l.setFrameShape(QFrame.WinPanel)
@@ -280,7 +299,8 @@ class ArduinoPython(QMainWindow):
         self.avariya = WindowAvar()
         self.avariya.showMaximized()
         
-
+    def avariya(self):
+        pass
 
 
 
@@ -325,16 +345,39 @@ class ArduinoPython(QMainWindow):
             self.tem_T2_sb.setVisible(True)
 
     def onSpin_M1(self, val):
-        pass
+        if val <= self.tem_M1_Bar.value():
+            self.qmsg.setIcon(QMessageBox.Critical)
+            self.qmsg.setWindowTitle("AVARIYA")
+            self.qmsg.setText("Birinchi Matorning Temperturasi oshib ketdi")
+            self.qmsg.show()
 
     def onSpin_M2(self, val):
-        pass
+        if val <= self.tem_M2_Bar.value():
+            tem_m1 = str(self.tem_M1_Bar.value())
+            tem_m2 = str(self.tem_M2_Bar.value())
+            tem_t1 = str(self.tem_T1_Bar.value())
+            tem_t2 = str(self.tem_T2_Bar.value())
+            
+
+            TableAvariy(tem_m1, tem_m2, tem_t1, tem_t2, )
+            self.qmsg.setIcon(QMessageBox.Critical)
+            self.qmsg.setWindowTitle("AVARIYA")
+            self.qmsg.setText("M2 Matorning temperaturasi oshib ketti")
+            self.qmsg.show()
 
     def onSpin_T1(self, val):
-        pass
+        if val <= self.tem_T1_Bar.value():
+            self.qmsg.setIcon(QMessageBox.Critical)
+            self.qmsg.setWindowTitle("AVARIYA")
+            self.qmsg.setText("T1 Tranzistorning temperaturasi oshib ketti")
+            self.qmsg.show()
 
     def onSpin_T2(self, val):
-        pass
+        if val <= self.tem_T2_Bar.value():
+            self.qmsg.setIcon(QMessageBox.Critical)
+            self.qmsg.setWindowTitle("AVARIYA")
+            self.qmsg.setText("T2 Tranzistorning Temperaturasi oshib ketti")
+            self.qmsg.show()
 
     
     
@@ -342,35 +385,57 @@ class ArduinoPython(QMainWindow):
     
     
     def onCurer(self):
-        print(self.combo_c.currentData())
         if self.combo_c.currentData() == 1:
             self.slider_Curer.setVisible(True)
             self.c_l.setVisible(True)
             self.slider_Curer.setEnabled(True)
-            # self.slider_Curer = QSlider(self)
-            # self.slider_Curer.setOrientation(QtCore.Qt.Vertical)
-            # self.slider_Curer.setGeometry(365, 550, 70, 200)
-            # self.slider_Curer.setMaximum(255)
-            # self.slider_Curer.setTickPosition(QSlider.TicksBothSides)
-            # self.slider_Curer.setSingleStep(50)
+            self.slider_Curer.valueChanged.connect(self.onDataCurer)
 
-            # self.c_l = QLabel(self)
-            # self.c_l.setFrameShape(QFrame.WinPanel)
-            # self.c_l.setFrameShadow(QFrame.Raised)
-            # self.c_l.setGeometry(320, 760, 160, 30)
-            # self.c_l.setText('<html><head/><body><p><span style=" font-size:10pt; font-weight:600; color:#0000ff;">Скорость Сурера</span></p></body></html>')
-            
         elif self.combo_c.currentData() == 2:
             self.slider_Curer.setEnabled(False)
             self.slider_Curer.setValue(21)
             
+
+    def onDataCurer(self, a):
+        print(a)
     def onMator_1(self, b):
         print(b)
 
     def onMator_2(self, a):
         print(a)
 
-   
+
+
+    def onRead(self):
+        if not self.serial.canReadLine():
+            return
+        else :
+            rx = self.serial.readLine()
+            try:
+                rxs = str(rx, 'utf-8').strip()
+                self.data = rxs.split(',') 
+                print(rxs)
+            except:
+                self.qmsg.setIcon(QMessageBox.Information)
+                self.qmsg.setWindowTitle("Xatolik")
+                self.qmsg.setText("Port bilan bog`lanishda hatolik")
+                self.qmsg.show()
+           
+
+
+
+
+
+    def onOpen(self):
+       self.serial.setPortName(self.combo.currentText())
+       self.serial.open(QIODevice.ReadWrite)
+
+
+
+    def onClose(self):
+        self.serial.close()
+
+
 
 
 app = QApplication(sys.argv)

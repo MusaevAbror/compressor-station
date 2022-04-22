@@ -1,11 +1,11 @@
-from operator import setitem
-import sys
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
-from PyQt5 import QtCore, QtGui
-from PyQt5 import QtWidgets
-from datetime import date
+from PyQt5 import *
+import datetime
+
+print(datetime.datetime.now())
+
 from models import TableAvariy
 
 class WindowAvar(QWidget):
@@ -14,12 +14,14 @@ class WindowAvar(QWidget):
         self.setWindowTitle("Avariya Haqida Maylumotlar")
         self.initUi()
         self.fillTable()
+      
 
     def initUi(self):
         self.cal = QCalendarWidget(self)
         self.cal.setGeometry(1500, 30, 400, 350)
-        self.dat = QDate(date.today())
-        self.cal.setSelectedDate(self.dat)
+        
+        # self.dat = QDate(date.today())
+        # self.cal.setSelectedDate(self.dat)
         self.cal.clicked.connect(self.onDat)
 
 
@@ -28,7 +30,7 @@ class WindowAvar(QWidget):
         self.table.setColumnCount(11)
         self.table.setHorizontalHeaderLabels(["ID", "Температура М1", "Температура М2", "Температура Т1", "Температура Т2", "Выбрация", "Степен Газа","Пожар" "Время аварии"])
         self.table.hideColumn(0)
-        \
+        
         
 
 
@@ -44,7 +46,6 @@ class WindowAvar(QWidget):
         for item in TableAvariy.objects():
             rowCount = self.table.rowCount()
             self.table.setRowCount(rowCount + 1)
-            print(item.id)
             self.table.setItem(rowCount, 0, QTableWidgetItem(str(item.id)))
             self.table.setItem(rowCount, 1, QTableWidgetItem(str(item.temM1)))
             self.table.setItem(rowCount, 2, QTableWidgetItem(str(item.temM2)))
@@ -62,6 +63,7 @@ class WindowAvar(QWidget):
 
 
     def onDat(self, a):
+        # print(a.toString())
         sana = a.toString()
         self.d = 0
         if sana[3:6] == 'янв':
@@ -88,6 +90,10 @@ class WindowAvar(QWidget):
             self.d = 11
         else :
             self.d = 12
+        sana = str(self.d) + a.toString()[6:]
+        # print(sana)
+        # print(date(sana))
+
                     
 
 
