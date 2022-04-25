@@ -20,7 +20,7 @@ class ArduinoPython(QMainWindow):
         self.initAction()
         self.initMenu()
         self.qmsg = QMessageBox()
-   
+
     def initUi(self):
         self.setGeometry(400, 100, 1100, 900)
         self.serial = QSerialPort(self)
@@ -28,11 +28,9 @@ class ArduinoPython(QMainWindow):
         self.ports = QSerialPortInfo.availablePorts()
         self.serial.readyRead.connect(self.onRead)
         self.portlist = []
+        
         for port in self.ports:
             self.portlist.append(port.portName())
-
-    
-
 
         self.combo = QComboBox(self) # combobox Portni tanlash uchun 
         self.combo.move(30, 30)
@@ -397,12 +395,13 @@ class ArduinoPython(QMainWindow):
             
 
     def onDataCurer(self, a):
-        print(a)
+        self.serialSend([3, a])
+        
     def onMator_1(self, b):
-        print(b)
+        self.SerialSend([1, b])
 
     def onMator_2(self, a):
-        print(a)
+        self.SerialSend([2, a])
 
 
 
@@ -414,7 +413,7 @@ class ArduinoPython(QMainWindow):
             try:
                 rxs = str(rx, 'utf-8').strip()
                 self.data = rxs.split(',') 
-                print(rxs)
+                print(self.data)
             except:
                 self.qmsg.setIcon(QMessageBox.Information)
                 self.qmsg.setWindowTitle("Xatolik")
@@ -423,6 +422,14 @@ class ArduinoPython(QMainWindow):
            
 
 
+    def SerialSend(self, data):
+        self.txs = ""
+        for item in data:
+            self.txs += str(item)
+            self.txs += ','
+        self.txs = self.txs[:-1]
+        self.txs += ';'
+        self.serial.write(self.txs.encode())
 
 
 
