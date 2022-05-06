@@ -6,7 +6,7 @@ from PyQt5.QtCore import *
 from PyQt5 import QtCore, QtGui
 from window.avariya import WindowAvar
 from models import *
-import datetime
+
 
 
 
@@ -308,7 +308,7 @@ class ArduinoPython(QMainWindow):
             self.currentVal1 = self.tem_M1_sb.value()
             self.tem_M1_sb.setVisible(False)
             self.tem_M1_sb.setValue(self.tem_M1_Bar.maximum())
-            print(self.tem_M1_sb.value())
+           
         else :
             self.tem_M1_sb.setValue(self.currentVal1)
             self.tem_M1_sb.setVisible(True)
@@ -395,8 +395,8 @@ class ArduinoPython(QMainWindow):
             
 
     def onDataCurer(self, a):
-        self.serialSend([3, a])
-        
+        self.SerialSend([3, a])
+
     def onMator_1(self, b):
         self.SerialSend([1, b])
 

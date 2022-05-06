@@ -4,7 +4,7 @@ from PyQt5.QtCore import *
 from PyQt5 import *
 import datetime
 
-print(datetime.datetime.now())
+
 
 from models import TableAvariy
 
@@ -17,13 +17,19 @@ class WindowAvar(QWidget):
       
 
     def initUi(self):
-        self.cal = QCalendarWidget(self)
-        self.cal.setGeometry(1500, 30, 400, 350)
-        
-        # self.dat = QDate(date.today())
-        # self.cal.setSelectedDate(self.dat)
-        self.cal.clicked.connect(self.onDat)
+        self.cal = QDateEdit(self, calendarPopup=True)
+        self.cal.setGeometry(1500, 30, 100, 30)
+        self.cal.setDate(QDate.currentDate())
+        self.cal.dateChanged.connect(self.onDate)
+        print(self.cal.date().day())
+        print(self.cal.date().month())
+        print(self.cal.date().year())
 
+        
+
+
+        
+      
 
         self.table = QTableWidget(self)
         self.table.setGeometry(30, 50, 1450, 800)
@@ -62,38 +68,11 @@ class WindowAvar(QWidget):
 
 
 
-    def onDat(self, a):
-        # print(a.toString())
-        sana = a.toString()
-        self.d = 0
-        if sana[3:6] == 'янв':
-            self.d = 1
-        elif sana[3:6] == 'фев':
-            self.d = 2
-        elif sana[3:6] == 'мар':
-            self.d = 3
-        elif sana[3:6] == 'апр':
-            self.d = 4
-        elif sana[3:6] == 'май':
-            self.d = 5
-        elif sana[3:6] == 'июн':
-            self.d = 6
-        elif sana[3:6] == 'июл':
-            self.d = 7
-        elif sana[3:6] == 'авг':
-            self.d = 8
-        elif sana[3:6] == 'сен':
-            self.d = 9
-        elif sana[3:6] == 'окт':
-            self.d = 10
-        elif sana[3:6] == 'ноя':
-            self.d = 11
-        else :
-            self.d = 12
-        sana = str(self.d) + a.toString()[6:]
-        # print(sana)
-        # print(date(sana))
-
+    def onDate(self):
+        year = self.cal.date().year()
+        month = self.cal.date().month()
+        day = self.cal.date().day()
+        print(year, month, day)
                     
 
 
