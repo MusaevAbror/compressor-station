@@ -4,8 +4,6 @@ from PyQt5.QtCore import *
 from PyQt5 import *
 import datetime
 
-
-
 from models import TableAvariy
 
 class WindowAvar(QWidget):
