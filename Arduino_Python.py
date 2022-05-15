@@ -1,4 +1,5 @@
 import sys
+from time import sleep
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5.QtSerialPort import QSerialPort, QSerialPortInfo
@@ -6,13 +7,7 @@ from PyQt5.QtCore import *
 from PyQt5 import QtCore, QtGui
 from window.avariya import WindowAvar
 from models import TableAvariy
-import datetime
-print(datetime.datetime)
-
-
-
-
-
+from  datetime import *
 
 class ArduinoPython(QMainWindow):
     def __init__(self):
@@ -199,10 +194,10 @@ class ArduinoPython(QMainWindow):
         
 
 
-        self.green_led_p = QLabel(self)
-        self.green_led_p.setStyleSheet("QLabel {background-color : green; border-color : black; border-width : 1px; border-style : solid; border-radius : 10px; min-height: 20px; min-width: 20px}")
-        self.green_led_p.move(870, 650)
-        
+        self.pojar_led_p = QLabel(self)
+        self.pojar_led_p.setStyleSheet("QLabel {background-color : green; border-color : black; border-width : 1px; border-style : solid; border-radius : 10px; min-height: 20px; min-width: 20px}")
+        self.pojar_led_p.move(870, 650)
+
         self.l_y = QLabel(self)
         self.l_y.setFrameShape(QFrame.WinPanel)
         self.l_y.setFrameShadow(QFrame.Raised)
@@ -211,9 +206,9 @@ class ArduinoPython(QMainWindow):
 
         
         
-        self.green_led_v = QLabel(self)
-        self.green_led_v.setStyleSheet("QLabel {background-color : green; border-color : black; border-width : 1px; border-style : solid; border-radius : 10px; min-height: 20px; min-width: 20px}")
-        self.green_led_v.move(870, 780)
+        self.vib_led_v = QLabel(self)
+        self.vib_led_v.setStyleSheet("QLabel {background-color : green; border-color : black; border-width : 1px; border-style : solid; border-radius : 10px; min-height: 20px; min-width: 20px}")
+        self.vib_led_v.move(870, 780)
 
         self.l_v = QLabel(self)
         self.l_v.setFrameShape(QFrame.WinPanel)
@@ -223,20 +218,27 @@ class ArduinoPython(QMainWindow):
 
     
 
+        self.spin_t1 = QSpinBox(self)
+        self.spin_t1.setGeometry(50, 400, 50, 30)
+        self.spin_t1.setEnabled(False)
+
+        self.spin_t2 = QSpinBox(self)
+        self.spin_t2.setGeometry(250, 400, 50, 30)
+
+        self.spin_t3 = QSpinBox(self)
+        self.spin_t3.setGeometry(450, 400, 50, 30)
+
+
+        self.spin_t4 = QSpinBox(self)
+        self.spin_t4.setGeometry(650, 400, 50, 30)
+
     
     
 
     
         
     def avariya(self):
-        obo_M1 = self.qlcd_o_m1.value()
-        obo_M2 = self.qlcd_o_m2.value()
-        tem_M1 = self.tem1_lf.text()
-        tem_M2 = self.tem2_lf.text()
-        tem_T1 = self.tem3_lf.text()
-        tem_T2 = self.tem4_lf.text()
-        vib_M1 = self.data[7]
-        vib_M2 = self.data[8]
+        pass
         
 
     def onStop(self):
@@ -249,6 +251,7 @@ class ArduinoPython(QMainWindow):
 
     
     def onStart(self):
+        self.serial.open(QIODevice.ReadWrite)
         self.slider_M1.setEnabled(True)
         self.slider_M2.setEnabled(True)
         self.slider_M1.setValue(self.M1_val)
@@ -267,6 +270,20 @@ class ArduinoPython(QMainWindow):
         if not self.serial.canReadLine():
             return
         else :
+            self.value_m1 = None
+            self.value_m2 = None
+            self.value_t1 = None
+            self.value_t2 = None
+            self.value_m1_obo = None
+            self.value_m2_obo = None
+            self.value_pojar = None
+            self.value_vib_m1 = None
+            self.value_vib_m2 = None
+            self.value_gaz = None
+            self.value_date = None
+            self.value_dat = None
+            self.cause = None
+
             rx = self.serial.readLine()
             try:
                 rxs = str(rx, 'utf-8').strip()
@@ -287,35 +304,59 @@ class ArduinoPython(QMainWindow):
                 self.qlcd_o_m1.display(self.data[5])
                 self.qlcd_o_m2.display(self.data[4])
                 self.qlcd_G.display(self.data[6])
-                a = True
                 
-                if self.data[9]:
-                    print(self.data[9])    
-                    self.red_led_p = QLabel(self)
-                    self.red_led_p.setStyleSheet("QLabel {background-color : red; border-color : black; border-width : 1px; border-style : solid; border-radius : 10px; min-height: 20px; min-width: 20px}")
-                    self.red_led_p.move(870, 650)
-                else :
-                    print(self.data[9])    
 
-                    self.green_led_p = QLabel(self)
-                    self.green_led_p.setStyleSheet("QLabel {background-color : green; border-color : black; border-width : 1px; border-style : solid; border-radius : 10px; min-height: 20px; min-width: 20px}")
-                    self.green_led_p.move(870, 650)
-                    a = False
+                if self.data[9] == '1':
+                    self.value_m1 = str(self.data[0])
+                    self.value_m2 = str(self.data[1])
+                    self.value_t1 = str(self.data[2])
+                    self.value_t2 = str(self.data[3])
+                    self.value_m1_obo = str(self.data[4])
+                    self.value_m2_obo = str(self.data[5])
+                    self.value_gaz = str(self.data[6])
+                    if self.data[7] == '1':
+                        self.value_vib_m1 = 'True'
+                    else:
+                        self.value_vib_m1 = 'False'
 
-                if (self.data[7] or self.data[8]) and a:
-                
-                    self.red_led_v = QLabel(self)
-                    self.red_led_v.setStyleSheet("QLabel {background-color : red; border-color : black; border-width : 1px; border-style : solid; border-radius : 10px; min-height: 20px; min-width: 20px}")
-                    self.red_led_v.move(870, 780)
-                else:
-                    self.green_led_v = QLabel(self)
-                    self.green_led_v.setStyleSheet("QLabel {background-color : green; border-color : black; border-width : 1px; border-style : solid; border-radius : 10px; min-height: 20px; min-width: 20px}")
-                    self.green_led_v.move(870, 780)
+                    if self.data[8] == '1':
+                        self.value_vib_m2 = 'True'
+                    else :
+                        self.value_vib_m2 = 'False'
+                    self.value_pojar = 'True'
+                    self.value_date = str(datetime.now())[:10]
+                    self.value_dat = str(datetime.now())[11:19]
+                    self.value_cause = 'pojar'
+                    TableAvariy(self.value_m1, self.value_m2, self.value_t1, self.value_t2, self.value_vib_m1, self.value_vib_m2, self.value_gaz, self.value_pojar, self.value_m1_obo, self.value_m2_obo, self.value_date, self.value_dat, self.value_cause).save()
 
+                    self.serial.close()
+                    self.pojar_led_p.setStyleSheet("")
+                    self.pojar_led_p.setStyleSheet("QLabel {background-color : red; border-color : black; border-width : 1px; border-style : solid; border-radius : 10px; min-height: 20px; min-width: 20px}")
+                    self.qmsg.setIcon(QMessageBox.Critical)
+                    self.qmsg.setWindowTitle("Pojar")
+                    self.qmsg.setText("Stansiyada pojar yuzberdi")
+                    self.qmsg.show()
+                    
+                # if self.data[7] == '1' :
+                #     self.serial.close()
+                #     self.vib_led_v.setStyleSheet("")
+                #     self.vib_led_v.setStyleSheet("QLabel {background-color : red; border-color : black; border-width : 1px; border-style : solid; border-radius : 10px; min-height: 20px; min-width: 20px}")
+                #     self.qmsg.setIcon(QMessageBox.Critical)
+                #     self.qmsg.setWindowTitle("Tebranish")
+                #     self.qmsg.setText("M1 Matorda kuchli tebranish...")
+                #     self.qmsg.show()
+                # if self.data[8] == '1' :
+                #     self.serial.close()
+                #     self.vib_led_v.setStyleSheet("")
+                #     self.vib_led_v.setStyleSheet("QLabel {background-color : red; border-color : black; border-width : 1px; border-style : solid; border-radius : 10px; min-height: 20px; min-width: 20px}")
+                #     self.qmsg.setIcon(QMessageBox.critical)
+                #     self.qmsg.setWindowTitle("Kuchli tebranish")
+                #     self.qmsg.setText("M2 matorda kuchli tebranish...")         
+                #     self.qmsg.show() 
 
             except:
                 self.qmsg.setIcon(QMessageBox.Information)
-                self.qmsg.setWindowTitle("Xatolik")
+                self.qmsg.setWindowTitle("Portda xatolik")
                 self.qmsg.setText("Port bilan bog`lanishda hatolik")
                 self.qmsg.show()
            
