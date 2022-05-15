@@ -19,20 +19,13 @@ class WindowAvar(QWidget):
         self.cal.setGeometry(1500, 30, 100, 30)
         self.cal.setDate(QDate.currentDate())
         self.cal.dateChanged.connect(self.onDate)
-        print(self.cal.date().day())
-        print(self.cal.date().month())
-        print(self.cal.date().year())
+       
 
         
-
-
-        
-      
-
         self.table = QTableWidget(self)
         self.table.setGeometry(30, 50, 1450, 800)
-        self.table.setColumnCount(11)
-        self.table.setHorizontalHeaderLabels(["ID", "Температура М1", "Температура М2", "Температура Т1", "Температура Т2", "Выбрация", "Степен Газа","Пожар" "Время аварии"])
+        self.table.setColumnCount(12)
+        self.table.setHorizontalHeaderLabels(["ID", "Температура М1", "Температура М2", "Температура Т1", "Температура Т2", "Выбрация M1", "Выбрация M2", "Степен Газа", "Пожар", "Время аварии"])
         self.table.hideColumn(0)
         
         
@@ -41,28 +34,31 @@ class WindowAvar(QWidget):
 
     def fillTable(self):
         self.table.clear()
-        self.table.setColumnCount(11)
+        self.table.setColumnCount(12)
         self.table.hideColumn(0)
-        self.table.setHorizontalHeaderLabels(["ID", "Температура М1 ℃", "Температура М2 (℃)", "Температура Т1 ℃", "Температура Т2 ℃ ", "Обород М1 (об/мин)", "Обород М2 (об/мин)", "Выбрация", "Степен Газа", "Пожар", "Время аварии"])
+        self.table.setHorizontalHeaderLabels(["ID", "Температура М1 ℃", "Температура М2 (℃)", "Температура Т1 ℃", "Температура Т2 ℃ ", "Обород М1 (об/мин)", "Обород М2 (об/мин)", "Выбрация_M1", "Выбрация_M2", "Степен Газа", "Пожар", "Время аварии"])
         self.table.setRowCount(0)
         self.table.setSelectionBehavior(QTableWidget.SelectRows)
+        self.table.resizeColumnsToContents()
 
         for item in TableAvariy.objects():
-            rowCount = self.table.rowCount()
-            self.table.setRowCount(rowCount + 1)
-            self.table.setItem(rowCount, 0, QTableWidgetItem(str(item.id)))
-            self.table.setItem(rowCount, 1, QTableWidgetItem(str(item.temM1)))
-            self.table.setItem(rowCount, 2, QTableWidgetItem(str(item.temM2)))
-            self.table.setItem(rowCount, 3, QTableWidgetItem(str(item.temT1)))
-            self.table.setItem(rowCount, 4, QTableWidgetItem(str(item.temT2)))
-            self.table.setItem(rowCount, 5, QTableWidgetItem(str(item.obM1)))
-            self.table.setItem(rowCount, 6, QTableWidgetItem(str(item.obM2)))
-            self.table.setItem(rowCount, 7, QTableWidgetItem(str(item.vib)))
-            self.table.setItem(rowCount, 8, QTableWidgetItem(str(item.gaz)))
-            self.table.setItem(rowCount, 9, QTableWidgetItem(str(item.pojar)))
-            self.table.setItem(rowCount, 10, QTableWidgetItem(str(item.date)))
+            row_count = self.table.rowCount()
+            self.table.setRowCount(row_count + 1)
+            self.table.setItem(row_count, 0, QTableWidgetItem(str(item.id)))
+            self.table.setItem(row_count, 1, QTableWidgetItem(item.temM1))
+            self.table.setItem(row_count, 2, QTableWidgetItem(item.temM2))
+            self.table.setItem(row_count, 3, QTableWidgetItem(item.temT1))
+            self.table.setItem(row_count, 4, QTableWidgetItem(item.temT2))
+            self.table.setItem(row_count, 5, QTableWidgetItem(item.obM1))
+            self.table.setItem(row_count, 6, QTableWidgetItem(item.obM2))
+            self.table.setItem(row_count, 7, QTableWidgetItem(item.vib_M1))
+            self.table.setItem(row_count, 8, QTableWidgetItem(item.vib_M2))
+            self.table.setItem(row_count, 9, QTableWidgetItem(item.gaz))
+            self.table.setItem(row_count, 10, QTableWidgetItem(item.pojar))
+            self.table.setItem(row_count, 11, QTableWidgetItem(item.date))
             self.table.resizeColumnsToContents()
-            
+
+
 
 
 

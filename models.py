@@ -30,41 +30,20 @@ class BaseModel(ABC):
     #     pass
 
 class TableAvariy(BaseModel):
-    table = 'Dip_Abror'
-    def __init__(self, temM1, temM2, temT1, temT2, vib, gaz, pojar, date, obM1, obM2, id = None):
+    table = "avariya"
+    def __init__(self, temM1, temM2, temT1, temT2, vib_M1, vib_M2, gaz, pojar, obM1, obM2, date, id = None):
         super().__init__(id)
         self.temM1 = temM1
         self.temM2 = temM2
         self.temT1 = temT1
         self.temT2 = temT2
-        self.vib = vib
+        self.vib_M1 = vib_M1
+        self.vib_M2 = vib_M2
         self.gaz = gaz
         self.pojar = pojar
         self.date = date
         self.obM1 = obM1
         self.obM2 = obM2
-
-
-    @property
-    def obM1(self):
-        return self.__obM1
-    @obM1.setter
-    def obM1(self, obM1):
-        if isinstance(obM1, int):
-            self.__obM1 = obM1
-        else :
-            self.__obM1 = 0
-            self.__isValid = False
-    @property
-    def obM2(self):
-        return self.__obM2
-    @obM2.setter
-    def obM2(self, obM2):
-        if isinstance(obM2, int):
-            self.__obM2 = obM2
-        else :
-            self.__obM2 = 0
-            self.__isValid = False
 
     @property
     def temM1(self):
@@ -89,6 +68,8 @@ class TableAvariy(BaseModel):
         else :
             self.__temM2 = '0'
             self.__isValid = False
+    
+    
     @property
     def temT1(self):
         return self.__temT1
@@ -112,18 +93,33 @@ class TableAvariy(BaseModel):
         else :
             self.__temT2 = '0'
             self.__isValid = False
+
     @property
-    def vib(self):
-        return self.__vib
+    def vib_M1(self):
+        return self.__vib_M1
 
-    @vib.setter
-    def vib(self, vib):
-        if isinstance(vib, str):
-            self.__vib = vib
+    @vib_M1.setter
+    def vib_M1(self, vib_M1):
+        if isinstance(vib_M1, str):
+            self.__vib_M1 = vib_M1
         else:
-            self.__vib = ' '
+            self.__vib_M1 = ' '
             self.__isValid = False
+    
+    
+    @property
+    def vib_M2(self):
+        return self.__vib_M2
 
+    @vib_M2.setter
+    def vib_M2(self, vib_M2):
+        if isinstance(vib_M2, str):
+            self.__vib_M2 = vib_M2
+        else :
+            self.__vib_M2 = ' '
+            self.__isValid = False
+    
+   
     @property
     def gaz(self):
         return self.__gaz
@@ -147,6 +143,34 @@ class TableAvariy(BaseModel):
             self.__pojar = " "
             self.__isValid = False
 
+
+
+
+    @property
+    def obM1(self):
+        return self.__obM1
+    
+    @obM1.setter
+    def obM1(self, obM1):
+        if isinstance(obM1, str):
+            self.__obM1 = obM1
+        else :
+            self.__obM1 = " "
+            self.__isValid = False
+    
+    @property
+    def obM2(self):
+        return self.__obM2
+    
+    @obM2.setter
+    def obM2(self, obM2):
+        if isinstance(obM2, str):
+            self.__obM2 = obM2
+        else :
+            self.__obM2 = " "
+            self.__isValid = False
+
+    
     @property
     def date(self):
         return self.__date
@@ -163,25 +187,23 @@ class TableAvariy(BaseModel):
             with sqlite3.connect(db_path) as conn:
                 cursor = conn.cursor()
                 if self.id is None:
-                    cursor.execute(f'''INSERT INTO {TableAvariy.table} (ТемператураМ1, ТемператураМ2, ТемператураТ1, ТемператураТ2, Выбрация, Степен_Газа, Пожар, date, oborodM1, oborodM2)
-                    VALUES ('{self.temM1}', '{self.temM2}', '{self.temT1}', '{self.temT2}', '{self.vib}', '{self.gaz}', '{self.pojar}', '{self.date}', {self.obM1}, {self.obM2})''')
+                    cursor.execute(f'''INSERT INTO {TableAvariy.table} (Температура_М1, Температура_М2, Температура_Т1, Температура_Т2, Выбрация_М1, Выбрация_М2, Степен_Газа, Пожар, Обород_М1, Обород_М2, Время)
+                    VALUES ('{self.temM1}', '{self.temM2}', '{self.temT1}', '{self.temT2}', '{self.vib_M1}', '{self.vib_M2}', '{self.gaz}', '{self.pojar}', {self.obM1}, {self.obM2}, '{self.date}')''')
                     self.id = cursor.lastrowid
                 else :
-                    cursor.execute(f'''UPDATE {TableAvariy.table} Температура М1 = '{self.temM1}', Температура М2 = '{self.temM2}',
-                    Температура Т1 = '{self.temT1}', Температура Т2 = '{self.temT2}', Выбрация = '{self.vib}', Степен Газа = '{self.pojar}', date = '{self.date}', oborodM1 = {self.obM1}, oborodM2 = {self.obM2} where id {self.id}''')
+                    cursor.execute(f'''UPDATE {TableAvariy.table} set Температура_М1 = '{self.temM1}', Температура_М2 = '{self.temM2}',
+                    Температура_Т1 = '{self.temT1}', Температура_Т2 = '{self.temT2}', Выбрация_М1 = '{self.vib_M1}', Выбрация_М2 = '{self.vib_M2}', Степен_Газа = '{self.pojar}', , Пожар = '{self.pojar}', Обород_М1 = {self.obM1}, Обород_М2 = {self.obM2}, Время = '{self.date}' where id {self.id}''')
                 conn.commit()
 
     def objects():
         with sqlite3.connect(db_path) as conn:
             cursor = conn.cursor()
             res = cursor.execute(f'''SELECT *From {TableAvariy.table}''')
+            
             for item in res:
-                yield TableAvariy(item[1], item[2], item[3], item[4], item[5], item[6], item[7], item[8], item[9], item[10], item[0])
+                yield TableAvariy(item[1], item[2], item[3], item[4], item[5], item[6], item[7], item[8], item[9], item[10], item[11], item[0])
             conn.commit()
 
     def __str__(self) -> str:
-        return f'{self.temM1}, {self.temM2}, {self.temT1}, {self.temT2}, {self.vib}, {self.gaz}, {self.pojar}, {self.date}, {self.id}'
+        return f'{self.temM1}, {self.temM2}, {self.temT1}, {self.temT2}, {self.vib_M1}, {self.vib_M2}, {self.gaz}, {self.pojar}, {self.obM1}, {self.obM2}, {self.date}, {self.id}'
 
-
-
-   
