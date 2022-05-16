@@ -8,6 +8,11 @@ from PyQt5 import QtCore, QtGui
 from window.avariya import WindowAvar
 from models import TableAvariy
 from  datetime import *
+from pyqtgraph import PlotWidget
+import pyqtgraph
+
+import numpy as np
+
 
 class ArduinoPython(QMainWindow):
     def __init__(self):
@@ -23,7 +28,18 @@ class ArduinoPython(QMainWindow):
         self.serial.setBaudRate(9600)
         self.ports = QSerialPortInfo.availablePorts()
         self.serial.readyRead.connect(self.onRead)
+
+        self.spin_t1_value = 125
+        self.spin_t2_value = 125
+        self.spin_t3_value = 125
+        self.spin_t4_value = 125
+
         self.portlist = []
+        self.listX = []
+        self.listY = []
+        for item in range(100):
+            self.listY.append(0)
+            self.listX.append(item)
         
         for port in self.ports:
             self.portlist.append(port.portName())
@@ -51,6 +67,10 @@ class ArduinoPython(QMainWindow):
         self.btn_p = QPushButton("Запуск", self)
         self.btn_p.move(580 ,30)
         self.btn_p.clicked.connect(self.onStart)
+
+        self.graph = PlotWidget(self)
+        self.graph.setGeometry(350, 500, 400, 250)
+       
 
 
 
@@ -162,7 +182,6 @@ class ArduinoPython(QMainWindow):
               
         self.qlcd_o_m1 = QLCDNumber(self) # display M1 mator oborodi uchun 
         self.qlcd_o_m1.setGeometry(800, 120, 250, 100)
-        self.qlcd_o_m1.display("12000")
 
         self.lcd_o_m1 = QLabel(self) # label display M1 mator oborodi uchun 
         self.lcd_o_m1.setFrameShape(QFrame.WinPanel)
@@ -220,26 +239,42 @@ class ArduinoPython(QMainWindow):
 
         self.spin_t1 = QSpinBox(self)
         self.spin_t1.setGeometry(50, 400, 50, 30)
-        self.spin_t1.setEnabled(False)
+        self.spin_t1.setMaximum(120)
+        self.spin_t1.setValue(120)
+        self.spin_t1.valueChanged.connect(self.onSpin_t1)
+
 
         self.spin_t2 = QSpinBox(self)
         self.spin_t2.setGeometry(250, 400, 50, 30)
+        self.spin_t2.setMaximum(120)
+        self.spin_t2.setValue(120)
+        self.spin_t2.valueChanged.connect(self.onSpin_t2)
 
         self.spin_t3 = QSpinBox(self)
         self.spin_t3.setGeometry(450, 400, 50, 30)
-
+        self.spin_t3.setMaximum(125)
+        self.spin_t3.setValue(125)
+        self.spin_t3.valueChanged.connect(self.onSpin_t3)
 
         self.spin_t4 = QSpinBox(self)
         self.spin_t4.setGeometry(650, 400, 50, 30)
-
-    
-    
-
-    
+        # self.spin_t4.setEnabled(False)
+        self.spin_t4.setMaximum(125)
+        self.spin_t4.setValue(125)
+        self.spin_t4.valueChanged.connect(self.onSpin_t1)
         
-    def avariya(self):
-        pass
-        
+    
+    def onSpin_t1(self, a):
+        self.spin_t1_value = a
+
+    def onSpin_t2(self, b):
+        self.spin_t2_value = b
+    def onSpin_t3(self, c):
+        self.spin_t3_value = c
+
+    def onSpin_t4(self, d):
+        self.spin_t4_value = d
+        print(self.spin_t4_value)    
 
     def onStop(self):
         self.M1_val = self.slider_M1.value()
@@ -304,7 +339,11 @@ class ArduinoPython(QMainWindow):
                 self.qlcd_o_m1.display(self.data[5])
                 self.qlcd_o_m2.display(self.data[4])
                 self.qlcd_G.display(self.data[6])
+                self.graph.clear()
+                self.listY = self.listY[1:]
+                self.listY.append(float(self.data[3]))
                 
+                self.graph.plot(self.listX, self.listY)
 
                 if self.data[9] == '1':
                     self.value_m1 = str(self.data[0])
@@ -353,6 +392,150 @@ class ArduinoPython(QMainWindow):
                 #     self.qmsg.setWindowTitle("Kuchli tebranish")
                 #     self.qmsg.setText("M2 matorda kuchli tebranish...")         
                 #     self.qmsg.show() 
+
+                if float(self.data[0]) > float(self.spin_t1_value) :
+                    self.slider_M1.setValue(0)
+
+                    self.value_m1 = str(self.data[0])
+                    self.value_m2 = str(self.data[1])
+                    self.value_t1 = str(self.data[2])
+                    self.value_t2 = str(self.data[3])
+                    self.value_m1_obo = str(self.data[4])
+                    self.value_m2_obo = str(self.data[5])
+                    self.value_gaz = str(self.data[6])
+                    if self.data[7] == '1':
+                        self.value_vib_m1 = 'True'
+                    else:
+                        self.value_vib_m1 = 'False'
+
+                    if self.data[8] == '1':
+                        self.value_vib_m2 = 'True'
+                    else :
+                        self.value_vib_m2 = 'False'
+                    
+                    if self.data[9] == '1':
+                        self.value_pojar = 'True'
+                    else :
+                        self.value_pojar = 'False'
+
+                    self.value_date = str(datetime.now())[:10]
+                    self.value_dat = str(datetime.now())[11:19]
+                    self.value_cause = 'Temperatura M1'
+                    TableAvariy(self.value_m1, self.value_m2, self.value_t1, self.value_t2, self.value_vib_m1, self.value_vib_m2, self.value_gaz, self.value_pojar, self.value_m1_obo, self.value_m2_obo, self.value_date, self.value_dat, self.value_cause).save()
+
+                    self.qmsg.setIcon(QMessageBox.Critical)
+                    self.qmsg.setWindowTitle("Avariya")
+                    self.qmsg.setText("M1 matorning temperaturasi oshib ketdi...")
+                    self.qmsg.show()
+                
+                # if float(self.data[1]) > self.spin_t2_value:
+                #     self.slider_M1.setValue(0)
+
+                #     self.value_m1 = str(self.data[0])
+                #     self.value_m2 = str(self.data[1])
+                #     self.value_t1 = str(self.data[2])
+                #     self.value_t2 = str(self.data[3])
+                #     self.value_m1_obo = str(self.data[4])
+                #     self.value_m2_obo = str(self.data[5])
+                #     self.value_gaz = str(self.data[6])
+                #     if self.data[7] == '1':
+                #         self.value_vib_m1 = 'True'
+                #     else:
+                #         self.value_vib_m1 = 'False'
+
+                #     if self.data[8] == '1':
+                #         self.value_vib_m2 = 'True'
+                #     else :
+                #         self.value_vib_m2 = 'False'
+                    
+                #     if self.data[9] == '1':
+                #         self.value_pojar = 'True'
+                #     else :
+                #         self.value_pojar = 'False'
+
+                #     self.value_date = str(datetime.now())[:10]
+                #     self.value_dat = str(datetime.now())[11:19]
+                #     self.value_cause = 'Temperatura M2'
+
+                #     TableAvariy(self.value_m1, self.value_m2, self.value_t1, self.value_t2, self.value_vib_m1, self.value_vib_m2, self.value_gaz, self.value_pojar, self.value_m1_obo, self.value_m2_obo, self.value_date, self.value_dat, self.value_cause).save()
+                #     self.qmsg.setIcon(QMessageBox.Critical)
+                #     self.qmsg.setWindowTitle("Avariya")
+                #     self.qmsg.setText("M2 matorning temperaturasi oshib ketdi...")
+                #     self.qmsg.show()
+                
+                # if float(self.data[2]) > self.spin_t3_value:
+                #     self.slider_M1.setValue(0)
+
+                #     self.value_m1 = str(self.data[0])
+                #     self.value_m2 = str(self.data[1])
+                #     self.value_t1 = str(self.data[2])
+                #     self.value_t2 = str(self.data[3])
+                #     self.value_m1_obo = str(self.data[4])
+                #     self.value_m2_obo = str(self.data[5])
+                #     self.value_gaz = str(self.data[6])
+                #     if self.data[7] == '1':
+                #         self.value_vib_m1 = 'True'
+                #     else:
+                #         self.value_vib_m1 = 'False'
+
+                #     if self.data[8] == '1':
+                #         self.value_vib_m2 = 'True'
+                #     else :
+                #         self.value_vib_m2 = 'False'
+                    
+                #     if self.data[9] == '1':
+                #         self.value_pojar = 'True'
+                #     else :
+                #         self.value_pojar = 'False'
+
+                #     self.value_date = str(datetime.now())[:10]
+                #     self.value_dat = str(datetime.now())[11:19]
+                #     self.value_cause = 'Temperatura T1'
+
+                #     TableAvariy(self.value_m1, self.value_m2, self.value_t1, self.value_t2, self.value_vib_m1, self.value_vib_m2, self.value_gaz, self.value_pojar, self.value_m1_obo, self.value_m2_obo, self.value_date, self.value_dat, self.value_cause).save()
+                #     self.qmsg.setIcon(QMessageBox.Critical)
+                #     self.qmsg.setWindowTitle("Avariya")
+                #     self.qmsg.setText("T1 Tranzistorning temperaturasi oshib ketdi...")
+                #     self.qmsg.show()
+                
+                # if float(self.data[3]) > self.spin_t4_value:
+                #     self.slider_M2.setValue(0)
+
+                #     self.value_m1 = str(self.data[0])
+                #     self.value_m2 = str(self.data[1])
+                #     self.value_t1 = str(self.data[2])
+                #     self.value_t2 = str(self.data[3])
+                #     self.value_m1_obo = str(self.data[4])
+                #     self.value_m2_obo = str(self.data[5])
+                #     self.value_gaz = str(self.data[6])
+                #     if self.data[7] == '1':
+                #         self.value_vib_m1 = 'True'
+                #     else:
+                #         self.value_vib_m1 = 'False'
+
+                #     if self.data[8] == '1':
+                #         self.value_vib_m2 = 'True'
+                #     else :
+                #         self.value_vib_m2 = 'False'
+                    
+                #     if self.data[9] == '1':
+                #         self.value_pojar = 'True'
+                #     else :
+                #         self.value_pojar = 'False'
+
+                #     self.value_date = str(datetime.now())[:10]
+                #     self.value_dat = str(datetime.now())[11:19]
+                #     self.value_cause = 'Temperatura T2'
+
+                #     TableAvariy(self.value_m1, self.value_m2, self.value_t1, self.value_t2, self.value_vib_m1, self.value_vib_m2, self.value_gaz, self.value_pojar, self.value_m1_obo, self.value_m2_obo, self.value_date, self.value_dat, self.value_cause).save()
+                #     self.qmsg.setIcon(QMessageBox.Critical)
+                #     self.qmsg.setWindowTitle("Avariya")
+                #     self.qmsg.setText("T2 Tranzistorning temperaturasi oshib ketdi...")
+                #     self.qmsg.show()
+
+
+
+
 
             except:
                 self.qmsg.setIcon(QMessageBox.Information)
