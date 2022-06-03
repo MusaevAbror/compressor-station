@@ -1,5 +1,4 @@
 import sys
-from time import sleep
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5.QtSerialPort import QSerialPort, QSerialPortInfo
@@ -7,11 +6,9 @@ from PyQt5.QtCore import *
 from PyQt5 import QtCore, QtGui
 from window.avariya import WindowAvar
 from models import TableAvariy
-from  datetime import *
+from datetime import *
 from pyqtgraph import PlotWidget
-import pyqtgraph
 
-import numpy as np
 
 
 class ArduinoPython(QMainWindow):
@@ -27,7 +24,7 @@ class ArduinoPython(QMainWindow):
         self.setWindowTitle("Musaev Abror Bitiruv Malakaviy ishi")
 
         self.serial = QSerialPort(self)
-        self.serial.setBaudRate(9600)
+        self.serial.setBaudRate(115200)
         self.ports = QSerialPortInfo.availablePorts()
         self.serial.readyRead.connect(self.onRead)
 
@@ -149,8 +146,8 @@ class ArduinoPython(QMainWindow):
         self.slider_M1 = QSlider(self) # M1 matorning slideri tezlik uchun
         self.slider_M1.setOrientation(QtCore.Qt.Vertical)
         self.slider_M1.setGeometry(65, 500, 70, 250)
-        self.slider_M1.setMinimum(150)
-        self.slider_M1.setMaximum(255)
+        self.slider_M1.setMinimum(140)
+        self.slider_M1.setMaximum(256)
         self.slider_M1.setTickPosition(QSlider.TicksBothSides)
         self.slider_M1.setSingleStep(50)
         self.slider_M1.setCursor(Qt.SplitVCursor)
@@ -167,7 +164,7 @@ class ArduinoPython(QMainWindow):
         self.slider_M2 = QSlider(self)  # M2 matorning slideri tezlik uchun
         self.slider_M2.setOrientation(QtCore.Qt.Vertical)
         self.slider_M2.setGeometry(215, 500, 70, 250)
-        self.slider_M2.setMinimum(150)
+        self.slider_M2.setMinimum(140)
         self.slider_M2.setMaximum(255)
         self.slider_M2.setTickPosition(QSlider.TicksBothSides)
         self.slider_M2.setSingleStep(50)
@@ -283,8 +280,7 @@ class ArduinoPython(QMainWindow):
         self.M2_val = self.slider_M2.value()
         self.slider_M1.setEnabled(False)
         self.slider_M2.setEnabled(False)
-        self.SerialSend([1, 0])
-        self.SerialSend([2, 0])
+       
 
     
     def onStart(self):
@@ -293,15 +289,26 @@ class ArduinoPython(QMainWindow):
         self.slider_M2.setEnabled(True)
         self.slider_M1.setValue(self.M1_val)
         self.slider_M2.setValue(self.M2_val)
-        # self.SerialSend([1, self.M1_val])
-        # self.SerialSend([2, self.M2_val])
+    
 
     
-    def onMator_1(self, b):
-        self.SerialSend([1, b])
-
+    def onMator_1(self, a):
+        self.SerialSend([1, a])
+      
     def onMator_2(self, a):
         self.SerialSend([2, a])
+    
+    def stop_mator(self, data):
+        self.slider_M1.value(0)
+        self.slider_M2.value(0)
+        for item in range(10):
+            self.SerialSend([3, data])
+        self.close()
+
+
+  
+        
+
 
     def onRead(self):
         if not self.serial.canReadLine():
@@ -325,7 +332,7 @@ class ArduinoPython(QMainWindow):
             try:
                 rxs = str(rx, 'utf-8').strip()
                 self.data = rxs.split(',') 
-               
+                
                 self.tem_M1_Bar.setValue(round(float(self.data[0])))
                 self.tem1_lf.setText(str(float(self.data[0])) +" ℃ ")
                 
@@ -341,10 +348,10 @@ class ArduinoPython(QMainWindow):
                 self.qlcd_o_m1.display(self.data[5])
                 self.qlcd_o_m2.display(self.data[4])
                 self.qlcd_G.display(self.data[6])
+
                 self.graph.clear()
                 self.listY = self.listY[1:]
                 self.listY.append(float(self.data[3]))
-                
                 self.graph.plot(self.listX, self.listY)
 
                 if self.data[9] == '1':
@@ -364,13 +371,14 @@ class ArduinoPython(QMainWindow):
                         self.value_vib_m2 = 'True'
                     else :
                         self.value_vib_m2 = 'False'
+                    self.stop_mator(0)
                     self.value_pojar = 'True'
                     self.value_date = str(datetime.now())[:10]
                     self.value_dat = str(datetime.now())[11:19]
                     self.value_cause = 'pojar'
                     TableAvariy(self.value_m1, self.value_m2, self.value_t1, self.value_t2, self.value_vib_m1, self.value_vib_m2, self.value_gaz, self.value_pojar, self.value_m1_obo, self.value_m2_obo, self.value_date, self.value_dat, self.value_cause).save()
-
-                    self.serial.close()
+                    
+                    
                     self.pojar_led_p.setStyleSheet("")
                     self.pojar_led_p.setStyleSheet("QLabel {background-color : red; border-color : black; border-width : 1px; border-style : solid; border-radius : 10px; min-height: 20px; min-width: 20px}")
                     self.qmsg.setIcon(QMessageBox.Critical)
@@ -386,6 +394,8 @@ class ArduinoPython(QMainWindow):
                 #     self.qmsg.setWindowTitle("Tebranish")
                 #     self.qmsg.setText("M1 Matorda kuchli tebranish...")
                 #     self.qmsg.show()
+
+
                 # if self.data[8] == '1' :
                 #     self.serial.close()
                 #     self.vib_led_v.setStyleSheet("")
@@ -394,6 +404,8 @@ class ArduinoPython(QMainWindow):
                 #     self.qmsg.setWindowTitle("Kuchli tebranish")
                 #     self.qmsg.setText("M2 matorda kuchli tebranish...")         
                 #     self.qmsg.show() 
+
+
 
                 if float(self.data[0]) > float(self.spin_t1_value) :
                     self.slider_M1.setValue(0)
@@ -418,12 +430,12 @@ class ArduinoPython(QMainWindow):
                         self.value_pojar = 'True'
                     else :
                         self.value_pojar = 'False'
-
+                    self.stop_mator(0)
                     self.value_date = str(datetime.now())[:10]
                     self.value_dat = str(datetime.now())[11:19]
                     self.value_cause = 'Temperatura M1'
                     TableAvariy(self.value_m1, self.value_m2, self.value_t1, self.value_t2, self.value_vib_m1, self.value_vib_m2, self.value_gaz, self.value_pojar, self.value_m1_obo, self.value_m2_obo, self.value_date, self.value_dat, self.value_cause).save()
-                    self.serial.close()
+                  
                     self.qmsg.setIcon(QMessageBox.Critical)
                     self.qmsg.setWindowTitle("Avariya")
                     self.qmsg.setText("M1 matorning temperaturasi oshib ketdi...")
@@ -452,20 +464,21 @@ class ArduinoPython(QMainWindow):
                         self.value_pojar = 'True'
                     else :
                         self.value_pojar = 'False'
-
+                    
+                    self.stop_mator(0)
                     self.value_date = str(datetime.now())[:10]
                     self.value_dat = str(datetime.now())[11:19]
                     self.value_cause = 'Temperatura M2'
 
                     TableAvariy(self.value_m1, self.value_m2, self.value_t1, self.value_t2, self.value_vib_m1, self.value_vib_m2, self.value_gaz, self.value_pojar, self.value_m1_obo, self.value_m2_obo, self.value_date, self.value_dat, self.value_cause).save()
-                    self.serial.close()
+                    
                     self.qmsg.setIcon(QMessageBox.Critical)
                     self.qmsg.setWindowTitle("Avariya")
                     self.qmsg.setText("M2 matorning temperaturasi oshib ketdi...")
                     self.qmsg.show()
                 
                 if float(self.data[2]) > float(self.spin_t3_value):
-                    # self.slider_M1.setValue(0)
+                    self.slider_M1.setValue(0)
                     self.value_m1 = str(self.data[0])
                     self.value_m2 = str(self.data[1])
                     self.value_t1 = str(self.data[2])
@@ -487,29 +500,28 @@ class ArduinoPython(QMainWindow):
                         self.value_pojar = 'True'
                     else :
                         self.value_pojar = 'False'
-
+                    
+                    self.stop_mator(0)
                     self.value_date = str(datetime.now())[:10]
                     self.value_dat = str(datetime.now())[11:19]
                     self.value_cause = 'Temperatura T1'
 
                     TableAvariy(self.value_m1, self.value_m2, self.value_t1, self.value_t2, self.value_vib_m1, self.value_vib_m2, self.value_gaz, self.value_pojar, self.value_m1_obo, self.value_m2_obo, self.value_date, self.value_dat, self.value_cause).save()
-                    self.serial.close()
+                    
                     self.qmsg.setIcon(QMessageBox.Critical)
                     self.qmsg.setWindowTitle("Avariya")
                     self.qmsg.setText("T1 Tranzistorning temperaturasi oshib ketdi...")
                     self.qmsg.show()
                 
                 if float(self.data[3]) > float(self.spin_t4_value):
-                    # self.slider_M2.setValue(150)
-                    # self.SerialSend([1, 150])
-                    # self.SerialSend([2, 150])                    
+                    self.slider_M2.setValue(140)
                     self.value_m1 = str(self.data[0])
                     self.value_m2 = str(self.data[1])
                     self.value_t1 = str(self.data[2])
                     self.value_t2 = str(self.data[3])
                     self.value_m1_obo = str(self.data[4])
                     self.value_m2_obo = str(self.data[5])
-                    self.value_gaz = str(self.data[6])
+                    self.value_gaz = str(self.data[6])       
                     if self.data[7] == '1':
                         self.value_vib_m1 = 'True'
                     else:
@@ -524,6 +536,7 @@ class ArduinoPython(QMainWindow):
                         self.value_pojar = 'True'
                     else :
                         self.value_pojar = 'False'
+                    self.stop_mator(0) 
 
                     self.value_date = str(datetime.now())[:10]
                     self.value_dat = str(datetime.now())[11:19]
@@ -534,11 +547,6 @@ class ArduinoPython(QMainWindow):
                     self.qmsg.setText("T2 Tranzistorning temperaturasi oshib ketdi...")
                     self.qmsg.show()
                     
-
-
-
-
-
             except:
                 self.qmsg.setIcon(QMessageBox.Information)
                 self.qmsg.setWindowTitle("Portda xatolik")
@@ -552,6 +560,7 @@ class ArduinoPython(QMainWindow):
             self.txs += ','
         self.txs = self.txs[:-1]
         self.txs += ';'
+        print(self.txs)
         self.serial.write(self.txs.encode())
 
     def onOpen(self):
