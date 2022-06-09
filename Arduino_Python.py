@@ -147,7 +147,7 @@ class ArduinoPython(QMainWindow):
         self.slider_M1.setOrientation(QtCore.Qt.Vertical)
         self.slider_M1.setGeometry(65, 500, 70, 250)
         self.slider_M1.setMinimum(140)
-        self.slider_M1.setMaximum(256)
+        self.slider_M1.setMaximum(255)
         self.slider_M1.setTickPosition(QSlider.TicksBothSides)
         self.slider_M1.setSingleStep(50)
         self.slider_M1.setCursor(Qt.SplitVCursor)
@@ -303,7 +303,7 @@ class ArduinoPython(QMainWindow):
         self.slider_M2.value(0)
         for item in range(10):
             self.SerialSend([3, data])
-        self.close()
+        self.serial.close()
 
 
   
@@ -332,7 +332,10 @@ class ArduinoPython(QMainWindow):
             try:
                 rxs = str(rx, 'utf-8').strip()
                 self.data = rxs.split(',') 
-                
+                print(self.data[7], end="")
+                print("    -   ", end="")
+                print(self.data[8])
+
                 self.tem_M1_Bar.setValue(round(float(self.data[0])))
                 self.tem1_lf.setText(str(float(self.data[0])) +" ℃ ")
                 
@@ -386,24 +389,24 @@ class ArduinoPython(QMainWindow):
                     self.qmsg.setText("Stansiyada pojar yuzberdi")
                     self.qmsg.show()
                     
-                # if self.data[7] == '1' :
-                #     self.serial.close()
-                #     self.vib_led_v.setStyleSheet("")
-                #     self.vib_led_v.setStyleSheet("QLabel {background-color : red; border-color : black; border-width : 1px; border-style : solid; border-radius : 10px; min-height: 20px; min-width: 20px}")
-                #     self.qmsg.setIcon(QMessageBox.Critical)
-                #     self.qmsg.setWindowTitle("Tebranish")
-                #     self.qmsg.setText("M1 Matorda kuchli tebranish...")
-                #     self.qmsg.show()
+                if self.data[7] == '1' :
+                    self.serial.close()
+                    self.vib_led_v.setStyleSheet("")
+                    self.vib_led_v.setStyleSheet("QLabel {background-color : red; border-color : black; border-width : 1px; border-style : solid; border-radius : 10px; min-height: 20px; min-width: 20px}")
+                    self.qmsg.setIcon(QMessageBox.Critical)
+                    self.qmsg.setWindowTitle("Tebranish")
+                    self.qmsg.setText("M1 Matorda kuchli tebranish...")
+                    self.qmsg.show()
 
 
-                # if self.data[8] == '1' :
-                #     self.serial.close()
-                #     self.vib_led_v.setStyleSheet("")
-                #     self.vib_led_v.setStyleSheet("QLabel {background-color : red; border-color : black; border-width : 1px; border-style : solid; border-radius : 10px; min-height: 20px; min-width: 20px}")
-                #     self.qmsg.setIcon(QMessageBox.critical)
-                #     self.qmsg.setWindowTitle("Kuchli tebranish")
-                #     self.qmsg.setText("M2 matorda kuchli tebranish...")         
-                #     self.qmsg.show() 
+                if self.data[8] == '1' :
+                    self.serial.close()
+                    self.vib_led_v.setStyleSheet("")
+                    self.vib_led_v.setStyleSheet("QLabel {background-color : red; border-color : black; border-width : 1px; border-style : solid; border-radius : 10px; min-height: 20px; min-width: 20px}")
+                    self.qmsg.setIcon(QMessageBox.critical)
+                    self.qmsg.setWindowTitle("Kuchli tebranish")
+                    self.qmsg.setText("M2 matorda kuchli tebranish...")         
+                    self.qmsg.show() 
 
 
 
@@ -442,7 +445,6 @@ class ArduinoPython(QMainWindow):
                     self.qmsg.show()
                 
                 if float(self.data[1]) > float(self.spin_t2_value):
-                    # self.slider_M1.setValue(0)
                     self.value_m1 = str(self.data[0])
                     self.value_m2 = str(self.data[1])
                     self.value_t1 = str(self.data[2])
@@ -560,7 +562,7 @@ class ArduinoPython(QMainWindow):
             self.txs += ','
         self.txs = self.txs[:-1]
         self.txs += ';'
-        print(self.txs)
+        
         self.serial.write(self.txs.encode())
 
     def onOpen(self):
